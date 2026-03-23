@@ -72,7 +72,7 @@ async function getGoogleToken(sa) {
   const header  = objToB64url({ alg: 'RS256', typ: 'JWT' });
   const payload = objToB64url({
     iss: sa.client_email,
-    scope: 'https://www.googleapis.com/auth/drive.file',
+    scope: 'https://www.googleapis.com/auth/drive',
     aud: 'https://oauth2.googleapis.com/token',
     iat: now, exp: now + 3600,
   });
