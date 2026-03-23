@@ -28,9 +28,17 @@ export async function onRequestPost(context) {
     const SA_JSON = context.env.GOOGLE_SERVICE_ACCOUNT;
     if (!SA_JSON) return jsonResp({ ok: false, error: 'GOOGLE_SERVICE_ACCOUNT not configured' }, 500);
 
-    let sa;
-    try { sa = JSON.parse(SA_JSON); }
-    catch (e) { return jsonResp({ ok: false, error: 'GOOGLE_SERVICE_ACCOUNT invalid JSON: ' + e.message }, 500); }
+   let sa;
+try { 
+  sa = JSON.parse(SA_JSON);
+
+  // FIX CRITICAL
+  sa.private_key = sa.private_key.replace(/\\n/g, '\n');
+
+}
+catch (e) { 
+  return jsonResp({ ok: false, error: 'GOOGLE_SERVICE_ACCOUNT invalid JSON: ' + e.message }, 500); 
+}
 
     const rawName  = (formData.pg1Name || 'Family').replace(/[^a-zA-Z0-9 ]/g, '').trim().replace(/\s+/g, '_') || 'Family';
     const today    = new Date().toISOString().slice(0, 10);
@@ -80,7 +88,7 @@ async function getGoogleToken(sa) {
   const sigInput = `${header}.${payload}`;
 
   // Normalize private_key: handle both literal \n and real newlines
-  const rawKey = sa.private_key.replace(/\\n/g, '\n');
+  const rawKey = sa.private_key;
 
   // Strip PEM headers and ALL whitespace to get pure base64
   const pemBase64 = rawKey
