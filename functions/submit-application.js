@@ -91,7 +91,6 @@ async function getGoogleToken(sa) {
   const rawKey = String(sa.private_key || '')
   .trim()
   .replace(/^"+|"+$/g, '')
-  .replace(/\\n/g, '\n')
   .replace(/\r/g, '');
 
 const pemBase64 = rawKey
