@@ -36,7 +36,7 @@ export async function onRequestPost(context) {
     const today    = new Date().toISOString().slice(0, 10);
     const langSufx = formData.lang === 'es' ? 'ES' : 'EN';
     const baseName = `${rawName}_${today}_${langSufx}`;
-    const FOLDER   = '1MIiMFD2x_4gahonMYEIZVuo6XMlbmeRs';
+    const FOLDER   = '1MiMFD2x_4gahonMYEIZVuo6XMIbmeRs';
 
     const token = await getGoogleToken(sa);
 
