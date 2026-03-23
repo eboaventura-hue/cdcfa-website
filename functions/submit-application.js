@@ -41,11 +41,11 @@ catch (e) {
 }
 
     const rawName  = (formData.pg1Name || 'Family').replace(/[^a-zA-Z0-9 ]/g, '').trim().replace(/\s+/g, '_') || 'Family';
-    const today    = new Date().toISOString().slice(0, 10);
-    const langSufx = formData.lang === 'es' ? 'ES' : 'EN';
-    const baseName = `${rawName}_${today}_${langSufx}`;
-    const FOLDER   = '1MiMFD2x_4gahonMYEIZVuo6XMIbmeRs';
-
+const today    = new Date().toISOString().slice(0, 10);
+const langSufx = formData.lang === 'es' ? 'ES' : 'EN';
+const baseName = `${rawName}_${today}_${langSufx}`;
+const FOLDER   = '1MiMFD2x_4gahonMYEIZVuo6XMIbmeRs';
+    
     const token = await getGoogleToken(sa);
 
     const pdfBytes  = buildPDF(formData);
