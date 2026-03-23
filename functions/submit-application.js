@@ -88,15 +88,24 @@ async function getGoogleToken(sa) {
   const sigInput = `${header}.${payload}`;
 
   // Normalize private_key: handle both literal \n and real newlines
-  const rawKey = sa.private_key;
+  const rawKey = String(sa.private_key || '')
+  .trim()
+  .replace(/^"+|"+$/g, '')
+  .replace(/\\n/g, '\n')
+  .replace(/\r/g, '');
 
-  // Strip PEM headers and ALL whitespace to get pure base64
-  const pemBase64 = rawKey
-    .replace(/-----BEGIN PRIVATE KEY-----/g, '')
-    .replace(/-----END PRIVATE KEY-----/g, '')
-    .replace(/\s+/g, '');
+const pemBase64 = rawKey
+  .replace('-----BEGIN PRIVATE KEY-----', '')
+  .replace('-----END PRIVATE KEY-----', '')
+  .replace(/\n/g, '')
+  .replace(/\s+/g, '')
+  .trim();
 
-  const keyDer = base64Decode(pemBase64);
+if (!/^[A-Za-z0-9+/=]+$/.test(pemBase64)) {
+  throw new Error('private_key is malformed before base64 decode');
+}
+
+const keyDer = base64Decode(pemBase64);
 
   const cryptoKey = await crypto.subtle.importKey(
     'pkcs8', keyDer,
