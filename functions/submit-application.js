@@ -135,8 +135,12 @@ const keyDer = base64Decode(pemBase64);
 async function driveUpload(token, folderId, fileName, mimeType, bytes) {
   const BOUNDARY = 'CDCFA_BOUNDARY_XYZ';
   const enc = new TextEncoder();
-  const meta = JSON.stringify({ name: fileName, parents: [folderId] });
-
+  const meta = JSON.stringify({
+  name: fileName,
+  parents: [folderId],
+  supportsAllDrives: true
+});
+  
   const part1  = enc.encode(`--${BOUNDARY}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${meta}\r\n`);
   const part2h = enc.encode(`--${BOUNDARY}\r\nContent-Type: ${mimeType}\r\n\r\n`);
   const part2f = enc.encode(`\r\n--${BOUNDARY}--`);
