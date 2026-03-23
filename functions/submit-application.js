@@ -127,7 +127,7 @@ async function driveUpload(token, folderId, fileName, mimeType, bytes) {
   const body   = concatBytes(part1, part2h, bytes, part2f);
 
   const resp = await fetch(
-    'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name',
+    'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name&supportsAllDrives=true',
     {
       method: 'POST',
       headers: {
