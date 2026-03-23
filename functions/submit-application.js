@@ -381,11 +381,18 @@ function concatBytes(...arrs) {
 
 /** Decode a base64 string to Uint8Array — works with standard base64 only */
 function base64Decode(b64) {
-  // Normalise: pad to multiple of 4
-  const padded = b64 + '==='.slice(0, (4 - b64.length % 4) % 4);
+  const normalized = String(b64)
+    .trim()
+    .replace(/-/g, '+')
+    .replace(/_/g, '/');
+
+  const padded = normalized + '='.repeat((4 - normalized.length % 4) % 4);
   const bin = atob(padded);
   const out = new Uint8Array(bin.length);
-  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+
+  for (let i = 0; i < bin.length; i++) {
+    out[i] = bin.charCodeAt(i);
+  }
   return out;
 }
 
