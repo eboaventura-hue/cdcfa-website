@@ -1,8 +1,0 @@
-node_modules/
-.wrangler/
-*.log
-.DS_Store
-Thumbs.db
-dist/
-.env
-.env.local
