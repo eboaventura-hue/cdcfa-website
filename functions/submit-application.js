@@ -1,5 +1,13 @@
 /**
  * Cloudflare Pages Function  –  POST /submit-application
+ *
+ * 1. Builds PDF + DOCX in English AND Spanish
+ * 2. Sends both files as email attachments to digitalforms@cdcfa.org via Resend API
+ * 3. Uploads both files to Google Drive
+ *
+ * Required env vars:
+ *   GOOGLE_SERVICE_ACCOUNT  – service account JSON (stringify)
+ *   RESEND_API_KEY          – Resend.com API key (get free at resend.com)
  */
 
 const CORS = {
@@ -7,6 +15,9 @@ const CORS = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type',
 };
+
+const RECIPIENT   = 'digitalforms@cdcfa.org';
+const DRIVE_FOLDER = '1zxZSkTIue0_wXhaeO7_94EwZmnqcQjuk';
 
 function jsonResp(data, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -21,48 +32,67 @@ export async function onRequestOptions() {
 
 export async function onRequestPost(context) {
   try {
-    let formData;
-    try { formData = await context.request.json(); }
+    // ── Parse body ───────────────────────────────────────────────────────────
+    let d;
+    try { d = await context.request.json(); }
     catch { return jsonResp({ ok: false, error: 'Invalid JSON body' }, 400); }
 
-    const SA_JSON = context.env.GOOGLE_SERVICE_ACCOUNT;
-    if (!SA_JSON) return jsonResp({ ok: false, error: 'GOOGLE_SERVICE_ACCOUNT not configured' }, 500);
+    // ── Validate env vars ────────────────────────────────────────────────────
+    const SA_JSON      = context.env.GOOGLE_SERVICE_ACCOUNT;
+    const RESEND_KEY   = context.env.RESEND_API_KEY;
 
-   let sa;
-try { 
-  sa = JSON.parse(SA_JSON);
+    if (!SA_JSON)    return jsonResp({ ok: false, error: 'GOOGLE_SERVICE_ACCOUNT not configured' }, 500);
+    if (!RESEND_KEY) return jsonResp({ ok: false, error: 'RESEND_API_KEY not configured' }, 500);
 
-  // FIX CRITICAL
-  sa.private_key = sa.private_key.replace(/\\n/g, '\n');
+    let sa;
+    try {
+      sa = JSON.parse(SA_JSON);
+      sa.private_key = sa.private_key.replace(/\\n/g, '\n');
+    } catch (e) {
+      return jsonResp({ ok: false, error: 'GOOGLE_SERVICE_ACCOUNT invalid JSON: ' + e.message }, 500);
+    }
 
-}
-catch (e) { 
-  return jsonResp({ ok: false, error: 'GOOGLE_SERVICE_ACCOUNT invalid JSON: ' + e.message }, 500); 
-}
+    // ── Build file names ─────────────────────────────────────────────────────
+    const rawName  = (d.pg1Name || 'Family').replace(/[^a-zA-Z0-9 ]/g, '').trim().replace(/\s+/g, '_') || 'Family';
+    const today    = new Date().toISOString().slice(0, 10);
+    const nameEN   = `${rawName}_${today}_EN`;
+    const nameES   = `${rawName}_${today}_ES`;
 
-    const rawName  = (formData.pg1Name || 'Family').replace(/[^a-zA-Z0-9 ]/g, '').trim().replace(/\s+/g, '_') || 'Family';
-const today    = new Date().toISOString().slice(0, 10);
-const langSufx = formData.lang === 'es' ? 'ES' : 'EN';
-const baseName = `${rawName}_${today}_${langSufx}`;
-const FOLDER = '1zxZSkTIue0_wXhaeO7_94EwZmnqcQjuk';
-    
+    // ── Build documents (EN + ES) ─────────────────────────────────────────────
+    const pdfEN  = buildPDF(d, 'en');
+    const pdfES  = buildPDF(d, 'es');
+    const docxEN = buildDOCX(d, 'en');
+    const docxES = buildDOCX(d, 'es');
+
+    // ── Send email with all 4 attachments ─────────────────────────────────────
+    const emailResult = await sendEmail(RESEND_KEY, {
+      to:      RECIPIENT,
+      subject: `Waitlist Application — ${rawName} (${today})`,
+      name:    rawName,
+      date:    today,
+      attachments: [
+        { filename: `${nameEN}.pdf`,  content: bytesToBase64(pdfEN) },
+        { filename: `${nameEN}.docx`, content: bytesToBase64(docxEN) },
+        { filename: `${nameES}.pdf`,  content: bytesToBase64(pdfES) },
+        { filename: `${nameES}.docx`, content: bytesToBase64(docxES) },
+      ],
+    });
+
+    // ── Upload to Google Drive (EN files) ────────────────────────────────────
     const token = await getGoogleToken(sa);
-
-    const pdfBytes  = buildPDF(formData);
-    const docxBytes = buildDOCX(formData);
-
     const [pdfFile, docxFile] = await Promise.all([
-      driveUpload(token, FOLDER, `${baseName}.pdf`, 'application/pdf', pdfBytes),
-      driveUpload(token, FOLDER, `${baseName}.docx`,
-        'application/vnd.openxmlformats-officedocument.wordprocessingml.document', docxBytes),
+      driveUpload(token, DRIVE_FOLDER, `${nameEN}.pdf`,  'application/pdf', pdfEN),
+      driveUpload(token, DRIVE_FOLDER, `${nameEN}.docx`,
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document', docxEN),
     ]);
 
     return jsonResp({
       ok: true,
-      message: 'Application submitted successfully!',
+      message: 'Application submitted! Files sent to ' + RECIPIENT,
+      email: emailResult,
       files: {
-        pdf:  { name: `${baseName}.pdf`,  id: pdfFile.id },
-        docx: { name: `${baseName}.docx`, id: docxFile.id },
+        pdf:  { name: `${nameEN}.pdf`,  id: pdfFile.id },
+        docx: { name: `${nameEN}.docx`, id: docxFile.id },
       },
     });
 
@@ -72,148 +102,161 @@ const FOLDER = '1zxZSkTIue0_wXhaeO7_94EwZmnqcQjuk';
   }
 }
 
-// ── Google Auth ──────────────────────────────────────────────────────────────
+// ── EMAIL via Resend API ──────────────────────────────────────────────────────
+
+async function sendEmail(apiKey, { to, subject, name, date, attachments }) {
+  const html = `
+    <h2 style="color:#5b2d8e;">New Waitlist Application Received</h2>
+    <p><strong>Applicant:</strong> ${name}</p>
+    <p><strong>Date Submitted:</strong> ${date}</p>
+    <p>Please find attached the application forms in English and Spanish (PDF and DOCX formats).</p>
+    <hr/>
+    <p style="color:#888;font-size:12px;">This email was automatically generated by the CDC Inc. website form.</p>
+  `;
+
+  const body = {
+    from:        'CDC Inc. Website <noreply@cdcfa.org>',
+    to:          [to],
+    subject,
+    html,
+    attachments,
+  };
+
+  const resp = await fetch('https://api.resend.com/emails', {
+    method:  'POST',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type':  'application/json',
+    },
+    body: JSON.stringify(body),
+  });
+
+  const result = await resp.json();
+  if (result.error || !result.id) {
+    throw new Error(`Email send failed: ${JSON.stringify(result)}`);
+  }
+  return { id: result.id };
+}
+
+// ── Google Auth ───────────────────────────────────────────────────────────────
 
 async function getGoogleToken(sa) {
-  const now = Math.floor(Date.now() / 1000);
-
+  const now     = Math.floor(Date.now() / 1000);
   const header  = objToB64url({ alg: 'RS256', typ: 'JWT' });
   const payload = objToB64url({
-    iss: sa.client_email,
-    scope: 'https://www.googleapis.com/auth/drive',
-    aud: 'https://oauth2.googleapis.com/token',
-    iat: now, exp: now + 3600,
+    iss:   sa.client_email,
+    scope: 'https://www.googleapis.com/auth/drive.file',
+    aud:   'https://oauth2.googleapis.com/token',
+    iat:   now,
+    exp:   now + 3600,
   });
 
   const sigInput = `${header}.${payload}`;
+  const pemBase64 = sa.private_key
+    .replace(/-----BEGIN PRIVATE KEY-----/g, '')
+    .replace(/-----END PRIVATE KEY-----/g, '')
+    .replace(/\s+/g, '');
 
-  // Normalize private_key: handle both literal \n and real newlines
-  const rawKey = String(sa.private_key || '')
-  .trim()
-  .replace(/^"+|"+$/g, '')
-  .replace(/\r/g, '');
-
-const pemBase64 = rawKey
-  .replace('-----BEGIN PRIVATE KEY-----', '')
-  .replace('-----END PRIVATE KEY-----', '')
-  .replace(/\n/g, '')
-  .replace(/\s+/g, '')
-  .trim();
-
-if (!/^[A-Za-z0-9+/=]+$/.test(pemBase64)) {
-  throw new Error('private_key is malformed before base64 decode');
-}
-
-const keyDer = base64Decode(pemBase64);
-
+  const keyDer    = base64Decode(pemBase64);
   const cryptoKey = await crypto.subtle.importKey(
     'pkcs8', keyDer,
     { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
     false, ['sign'],
   );
-
-  const sigBuf = await crypto.subtle.sign(
-    'RSASSA-PKCS1-v1_5', cryptoKey,
-    new TextEncoder().encode(sigInput),
-  );
-
+  const sigBuf = await crypto.subtle.sign('RSASSA-PKCS1-v1_5', cryptoKey,
+    new TextEncoder().encode(sigInput));
   const jwt = `${sigInput}.${bytesToB64url(new Uint8Array(sigBuf))}`;
 
   const resp = await fetch('https://oauth2.googleapis.com/token', {
-    method: 'POST',
+    method:  'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: `grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Ajwt-bearer&assertion=${jwt}`,
+    body:    `grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Ajwt-bearer&assertion=${jwt}`,
   });
-
   const data = await resp.json();
   if (!data.access_token) throw new Error(`Google token error: ${JSON.stringify(data)}`);
   return data.access_token;
 }
 
-// ── Google Drive Upload ──────────────────────────────────────────────────────
+// ── Google Drive Upload ───────────────────────────────────────────────────────
 
 async function driveUpload(token, folderId, fileName, mimeType, bytes) {
   const BOUNDARY = 'CDCFA_BOUNDARY_XYZ';
-  const enc = new TextEncoder();
-  const meta = JSON.stringify({
-  name: fileName,
-  parents: [folderId],
-  supportsAllDrives: true
-});
-  
-  const part1  = enc.encode(`--${BOUNDARY}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${meta}\r\n`);
-  const part2h = enc.encode(`--${BOUNDARY}\r\nContent-Type: ${mimeType}\r\n\r\n`);
-  const part2f = enc.encode(`\r\n--${BOUNDARY}--`);
-  const body   = concatBytes(part1, part2h, bytes, part2f);
-
+  const enc  = new TextEncoder();
+  const meta = JSON.stringify({ name: fileName, parents: [folderId] });
+  const body = concatBytes(
+    enc.encode(`--${BOUNDARY}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${meta}\r\n`),
+    enc.encode(`--${BOUNDARY}\r\nContent-Type: ${mimeType}\r\n\r\n`),
+    bytes,
+    enc.encode(`\r\n--${BOUNDARY}--`),
+  );
   const resp = await fetch(
-    'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name&supportsAllDrives=true&includeItemsFromAllDrives=true',
+    'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name',
     {
-      method: 'POST',
+      method:  'POST',
       headers: {
-        Authorization: `Bearer ${token}`,
+        Authorization:  `Bearer ${token}`,
         'Content-Type': `multipart/related; boundary="${BOUNDARY}"`,
       },
       body,
     },
   );
-
   const result = await resp.json();
   if (!result.id) throw new Error(`Drive upload failed: ${JSON.stringify(result)}`);
   return result;
 }
 
-// ── PDF Builder ──────────────────────────────────────────────────────────────
+// ── PDF Builder ───────────────────────────────────────────────────────────────
 
-function buildPDF(d) {
-  const isES = d.lang === 'es';
-  const T = (en, es) => isES ? es : en;
-  const enc = new TextEncoder();
-  const ts  = new Date().toLocaleDateString('en-US');
+function buildPDF(d, lang) {
+  const isES = lang === 'es';
+  const T    = (en, es) => isES ? es : en;
+  const enc  = new TextEncoder();
+  const ts   = new Date().toLocaleDateString('en-US');
   const kids = Array.isArray(d.children) ? d.children : [];
 
   const lines = [
     'COMMUNITY DEVELOPMENT CENTER, INC.',
     'Home of Friendship Academies & Family Child Care Home Network',
     '',
-    T('WAITING LIST APPLICATION','SOLICITUD DE LISTA DE ESPERA'),
-    T('Child Care & Development Services','Servicios de Cuidado y Desarrollo Infantil'),
-    `${T('Date Submitted','Fecha')}: ${ts}`,
+    T('WAITING LIST APPLICATION', 'SOLICITUD DE LISTA DE ESPERA'),
+    T('Child Care & Development Services', 'Servicios de Cuidado y Desarrollo Infantil'),
+    `${T('Date Submitted', 'Fecha')}: ${ts}`,
     '',
-    `== ${T('SECTION 1: FAMILY CONTACT INFORMATION','SECCION 1: INFORMACION DE CONTACTO')} ==`,
-    `${T('Parent/Guardian #1','Padre/Tutor #1')}: ${d.pg1Name||''}`,
-    `${T('Relationship','Relacion')}: ${d.pg1Rel||''}`,
-    `${T('Parent/Guardian #2','Padre/Tutor #2')}: ${d.pg2Name||''}`,
-    `${T('Relationship','Relacion')}: ${d.pg2Rel||''}`,
-    `${T('Home Address','Domicilio')}: ${d.homeAddress||''}`,
-    `Email: ${d.email||''}`,
-    `${T('Primary Phone','Tel principal')}: ${d.phone1||''}`,
-    `${T('Secondary Phone','Tel secundario')}: ${d.phone2||''}`,
+    `== ${T('SECTION 1: FAMILY CONTACT INFORMATION', 'SECCION 1: INFORMACION DE CONTACTO')} ==`,
+    `${T('Parent/Guardian #1', 'Padre/Tutor #1')}: ${d.pg1Name || ''}`,
+    `${T('Relationship', 'Relacion')}: ${d.pg1Rel || ''}`,
+    `${T('Parent/Guardian #2', 'Padre/Tutor #2')}: ${d.pg2Name || ''}`,
+    `${T('Relationship', 'Relacion')}: ${d.pg2Rel || ''}`,
+    `${T('Home Address', 'Domicilio')}: ${d.homeAddress || ''}`,
+    `Email: ${d.email || ''}`,
+    `${T('Primary Phone', 'Tel principal')}: ${d.phone1 || ''}`,
+    `${T('Secondary Phone', 'Tel secundario')}: ${d.phone2 || ''}`,
     '',
-    `== ${T('SECTION 2: CHILD INFORMATION','SECCION 2: INFORMACION DE NINOS')} ==`,
-    ...kids.map((c,i)=>`  ${i+1}. ${c.name||''} | DOB: ${c.dob||''} | ${c.gender||''} | ${c.language||''} | ${c.service||''}`),
+    `== ${T('SECTION 2: CHILD INFORMATION', 'SECCION 2: INFORMACION DE NINOS')} ==`,
+    ...kids.map((c, i) =>
+      `  ${i + 1}. ${c.name || ''} | DOB: ${c.dob || ''} | ${c.gender || ''} | ${c.language || ''} | ${c.service || ''}`),
     '',
-    `== ${T('SECTION 3: PREFERRED LOCATION','SECCION 3: UBICACION PREFERIDA')} ==`,
-    `${T('Preferred Site','Sitio preferido')}: ${d.preferredSite||''}`,
-    `${T('Provider Name','Proveedor')}: ${d.providerName||''}`,
+    `== ${T('SECTION 3: PREFERRED LOCATION', 'SECCION 3: UBICACION PREFERIDA')} ==`,
+    `${T('Preferred Site', 'Sitio preferido')}: ${d.preferredSite || ''}`,
+    `${T('Provider Name', 'Proveedor')}: ${d.providerName || ''}`,
     '',
-    `== ${T('SECTION 4: NEED & ELIGIBILITY','SECCION 4: NECESIDAD Y ELEGIBILIDAD')} ==`,
-    `${T('Type of Need','Tipo de necesidad')}: ${(d.needs||[]).join(', ')}`,
-    `${T('Monthly Income P1','Ingreso P1')}: ${d.income1||''}`,
-    `${T('Monthly Income P2','Ingreso P2')}: ${d.income2||''}`,
-    `${T('Other Income','Otros ingresos')}: ${d.incomeOther||''}`,
+    `== ${T('SECTION 4: NEED & ELIGIBILITY', 'SECCION 4: NECESIDAD Y ELEGIBILIDAD')} ==`,
+    `${T('Type of Need', 'Tipo de necesidad')}: ${(d.needs || []).join(', ')}`,
+    `${T('Monthly Income P1', 'Ingreso P1')}: ${d.income1 || ''}`,
+    `${T('Monthly Income P2', 'Ingreso P2')}: ${d.income2 || ''}`,
+    `${T('Other Income', 'Otros ingresos')}: ${d.incomeOther || ''}`,
     '',
-    `== ${T('SECTION 5: ACKNOWLEDGMENT','SECCION 5: RECONOCIMIENTO')} ==`,
-    `${T('Signature','Firma')}: ${d.signature||''}`,
-    `${T('Date','Fecha')}: ${d.signDate||''}`,
+    `== ${T('SECTION 5: ACKNOWLEDGMENT', 'SECCION 5: RECONOCIMIENTO')} ==`,
+    `${T('Signature', 'Firma')}: ${d.signature || ''}`,
+    `${T('Date', 'Fecha')}: ${d.signDate || ''}`,
     '',
     'registration@cdcfa.org  |  (310) 518-0776',
   ];
 
-  const ops = ['BT','/F1 10 Tf','50 750 Td','13 TL'];
+  const ops = ['BT', '/F1 10 Tf', '50 750 Td', '13 TL'];
   for (const line of lines) {
-    const safe = line.replace(/[^\x20-\x7E]/g,'').slice(0,110);
-    const esc  = safe.replace(/\\/g,'\\\\').replace(/\(/g,'\\(').replace(/\)/g,'\\)');
+    const safe = line.replace(/[^\x20-\x7E]/g, '').slice(0, 110);
+    const esc  = safe.replace(/\\/g, '\\\\').replace(/\(/g, '\\(').replace(/\)/g, '\\)');
     ops.push(`(${esc}) Tj T*`);
   }
   ops.push('ET');
@@ -232,24 +275,26 @@ function buildPDF(d) {
   const offsets = [];
   for (const obj of objs) { offsets.push(enc.encode(pdf).length); pdf += obj + '\n\n'; }
   const xref = enc.encode(pdf).length;
-  pdf += `xref\n0 ${objs.length+1}\n0000000000 65535 f \n`;
-  for (const o of offsets) pdf += o.toString().padStart(10,'0') + ' 00000 n \n';
-  pdf += `trailer\n<< /Size ${objs.length+1} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF\n`;
+  pdf += `xref\n0 ${objs.length + 1}\n0000000000 65535 f \n`;
+  for (const o of offsets) pdf += o.toString().padStart(10, '0') + ' 00000 n \n';
+  pdf += `trailer\n<< /Size ${objs.length + 1} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF\n`;
   return enc.encode(pdf);
 }
 
-// ── DOCX Builder ─────────────────────────────────────────────────────────────
+// ── DOCX Builder ──────────────────────────────────────────────────────────────
 
-function buildDOCX(d) {
-  const isES = d.lang === 'es';
-  const T = (en,es) => isES ? es : en;
-  const esc = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+function buildDOCX(d, lang) {
+  const isES = lang === 'es';
+  const T    = (en, es) => isES ? es : en;
+  const esc  = s => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   const para = t => `<w:p><w:r><w:t xml:space="preserve">${esc(t)}</w:t></w:r></w:p>`;
-  const heading = t => `<w:p><w:pPr><w:shd w:val="clear" w:color="auto" w:fill="5B2D8E"/></w:pPr><w:r><w:rPr><w:b/><w:color w:val="FFFFFF"/></w:rPr><w:t>${esc(t)}</w:t></w:r></w:p>`;
-  const field = (l,v) => para(`${l}: ${v||''}`);
+  const heading = t =>
+    `<w:p><w:pPr><w:shd w:val="clear" w:color="auto" w:fill="5B2D8E"/></w:pPr>` +
+    `<w:r><w:rPr><w:b/><w:color w:val="FFFFFF"/></w:rPr><w:t>${esc(t)}</w:t></w:r></w:p>`;
+  const field = (l, v) => para(`${l}: ${v || ''}`);
   const kids  = Array.isArray(d.children) ? d.children : [];
-  const rows  = kids.map((c,i)=>`<w:tr>
-    <w:tc><w:p><w:r><w:t>${i+1}</w:t></w:r></w:p></w:tc>
+  const rows  = kids.map((c, i) => `<w:tr>
+    <w:tc><w:p><w:r><w:t>${i + 1}</w:t></w:r></w:p></w:tc>
     <w:tc><w:p><w:r><w:t>${esc(c.name)}</w:t></w:r></w:p></w:tc>
     <w:tc><w:p><w:r><w:t>${esc(c.dob)}</w:t></w:r></w:p></w:tc>
     <w:tc><w:p><w:r><w:t>${esc(c.gender)}</w:t></w:r></w:p></w:tc>
@@ -260,43 +305,43 @@ function buildDOCX(d) {
   const docXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>
   ${para('COMMUNITY DEVELOPMENT CENTER, INC.')}
-  ${para(T('WAITING LIST APPLICATION','SOLICITUD DE LISTA DE ESPERA'))}
+  ${para(T('WAITING LIST APPLICATION', 'SOLICITUD DE LISTA DE ESPERA'))}
   <w:p/>
-  ${heading(T('SECTION 1: FAMILY CONTACT INFORMATION','SECCIÓN 1: INFORMACIÓN DE CONTACTO'))}
-  ${field(T('Parent/Guardian #1','Padre/Tutor #1'), d.pg1Name)}
-  ${field(T('Relationship','Relación'), d.pg1Rel)}
-  ${field(T('Parent/Guardian #2','Padre/Tutor #2'), d.pg2Name)}
-  ${field(T('Relationship','Relación'), d.pg2Rel)}
-  ${field(T('Home Address','Domicilio'), d.homeAddress)}
+  ${heading(T('SECTION 1: FAMILY CONTACT INFORMATION', 'SECCIÓN 1: INFORMACIÓN DE CONTACTO'))}
+  ${field(T('Parent/Guardian #1', 'Padre/Tutor #1'), d.pg1Name)}
+  ${field(T('Relationship', 'Relación'), d.pg1Rel)}
+  ${field(T('Parent/Guardian #2', 'Padre/Tutor #2'), d.pg2Name)}
+  ${field(T('Relationship', 'Relación'), d.pg2Rel)}
+  ${field(T('Home Address', 'Domicilio'), d.homeAddress)}
   ${field('Email', d.email)}
-  ${field(T('Primary Phone','Tel. principal'), d.phone1)}
-  ${field(T('Secondary Phone','Tel. secundario'), d.phone2)}
+  ${field(T('Primary Phone', 'Tel. principal'), d.phone1)}
+  ${field(T('Secondary Phone', 'Tel. secundario'), d.phone2)}
   <w:p/>
-  ${heading(T('SECTION 2: CHILD INFORMATION','SECCIÓN 2: INFORMACIÓN DE NIÑOS'))}
+  ${heading(T('SECTION 2: CHILD INFORMATION', 'SECCIÓN 2: INFORMACIÓN DE NIÑOS'))}
   <w:tbl><w:tblPr><w:tblW w:w="9200" w:type="dxa"/></w:tblPr>
     <w:tr>
       <w:tc><w:p><w:r><w:rPr><w:b/></w:rPr><w:t>#</w:t></w:r></w:p></w:tc>
-      <w:tc><w:p><w:r><w:rPr><w:b/></w:rPr><w:t>${T('Full Name','Nombre')}</w:t></w:r></w:p></w:tc>
+      <w:tc><w:p><w:r><w:rPr><w:b/></w:rPr><w:t>${T('Full Name', 'Nombre')}</w:t></w:r></w:p></w:tc>
       <w:tc><w:p><w:r><w:rPr><w:b/></w:rPr><w:t>DOB</w:t></w:r></w:p></w:tc>
-      <w:tc><w:p><w:r><w:rPr><w:b/></w:rPr><w:t>${T('Gender','Género')}</w:t></w:r></w:p></w:tc>
-      <w:tc><w:p><w:r><w:rPr><w:b/></w:rPr><w:t>${T('Language','Idioma')}</w:t></w:r></w:p></w:tc>
-      <w:tc><w:p><w:r><w:rPr><w:b/></w:rPr><w:t>${T('Service','Servicio')}</w:t></w:r></w:p></w:tc>
+      <w:tc><w:p><w:r><w:rPr><w:b/></w:rPr><w:t>${T('Gender', 'Género')}</w:t></w:r></w:p></w:tc>
+      <w:tc><w:p><w:r><w:rPr><w:b/></w:rPr><w:t>${T('Language', 'Idioma')}</w:t></w:r></w:p></w:tc>
+      <w:tc><w:p><w:r><w:rPr><w:b/></w:rPr><w:t>${T('Service', 'Servicio')}</w:t></w:r></w:p></w:tc>
     </w:tr>${rows}
   </w:tbl>
   <w:p/>
-  ${heading(T('SECTION 3: PREFERRED LOCATION','SECCIÓN 3: UBICACIÓN PREFERIDA'))}
-  ${field(T('Preferred Site','Sitio preferido'), d.preferredSite)}
-  ${field(T('Provider Name','Proveedor'), d.providerName)}
+  ${heading(T('SECTION 3: PREFERRED LOCATION', 'SECCIÓN 3: UBICACIÓN PREFERIDA'))}
+  ${field(T('Preferred Site', 'Sitio preferido'), d.preferredSite)}
+  ${field(T('Provider Name', 'Proveedor'), d.providerName)}
   <w:p/>
-  ${heading(T('SECTION 4: NEED & ELIGIBILITY','SECCIÓN 4: NECESIDAD Y ELEGIBILIDAD'))}
-  ${field(T('Type of Need','Tipo de necesidad'), (d.needs||[]).join(', '))}
-  ${field(T('Monthly Income P1','Ingreso P1'), d.income1)}
-  ${field(T('Monthly Income P2','Ingreso P2'), d.income2)}
-  ${field(T('Other Income','Otros ingresos'), d.incomeOther)}
+  ${heading(T('SECTION 4: NEED & ELIGIBILITY', 'SECCIÓN 4: NECESIDAD Y ELEGIBILIDAD'))}
+  ${field(T('Type of Need', 'Tipo de necesidad'), (d.needs || []).join(', '))}
+  ${field(T('Monthly Income P1', 'Ingreso P1'), d.income1)}
+  ${field(T('Monthly Income P2', 'Ingreso P2'), d.income2)}
+  ${field(T('Other Income', 'Otros ingresos'), d.incomeOther)}
   <w:p/>
-  ${heading(T('SECTION 5: ACKNOWLEDGMENT','SECCIÓN 5: RECONOCIMIENTO'))}
-  ${field(T('Signature','Firma'), d.signature)}
-  ${field(T('Date','Fecha'), d.signDate)}
+  ${heading(T('SECTION 5: ACKNOWLEDGMENT', 'SECCIÓN 5: RECONOCIMIENTO'))}
+  ${field(T('Signature', 'Firma'), d.signature)}
+  ${field(T('Date', 'Fecha'), d.signDate)}
   <w:p/>
   ${para('registration@cdcfa.org  |  (310) 518-0776')}
   <w:sectPr><w:pgSz w:w="12240" w:h="15840"/><w:pgMar w:top="1080" w:right="1080" w:bottom="1080" w:left="1080"/></w:sectPr>
@@ -310,7 +355,7 @@ function buildDOCX(d) {
   });
 }
 
-// ── ZIP ───────────────────────────────────────────────────────────────────────
+// ── ZIP (stored) ──────────────────────────────────────────────────────────────
 
 function buildZip(files) {
   const enc = new TextEncoder();
@@ -332,84 +377,77 @@ function buildZip(files) {
   return concatBytes(...parts, cdBytes, mkEOCD(entries.length, cdBytes.length, offset));
 }
 
-function mkLH(name, size, crc, now) {
-  const b=new Uint8Array(30+name.length),v=new DataView(b.buffer);
-  v.setUint32(0,0x04034b50,true);v.setUint16(4,20,true);v.setUint16(6,0,true);
-  v.setUint16(8,0,true);v.setUint16(10,now.time,true);v.setUint16(12,now.date,true);
-  v.setUint32(14,crc,true);v.setUint32(18,size,true);v.setUint32(22,size,true);
-  v.setUint16(26,name.length,true);v.setUint16(28,0,true);b.set(name,30);return b;
+function mkLH(n, s, c, now) {
+  const b = new Uint8Array(30 + n.length), v = new DataView(b.buffer);
+  v.setUint32(0,0x04034b50,true); v.setUint16(4,20,true); v.setUint16(6,0,true);
+  v.setUint16(8,0,true); v.setUint16(10,now.time,true); v.setUint16(12,now.date,true);
+  v.setUint32(14,c,true); v.setUint32(18,s,true); v.setUint32(22,s,true);
+  v.setUint16(26,n.length,true); v.setUint16(28,0,true); b.set(n,30); return b;
 }
 
-function mkCD(name, size, crc, now, offset) {
-  const b=new Uint8Array(46+name.length),v=new DataView(b.buffer);
-  v.setUint32(0,0x02014b50,true);v.setUint16(4,20,true);v.setUint16(6,20,true);
-  v.setUint16(8,0,true);v.setUint16(10,0,true);
-  v.setUint16(12,now.time,true);v.setUint16(14,now.date,true);
-  v.setUint32(16,crc,true);v.setUint32(20,size,true);v.setUint32(24,size,true);
-  v.setUint16(28,name.length,true);v.setUint16(30,0,true);v.setUint16(32,0,true);
-  v.setUint16(34,0,true);v.setUint16(36,0,true);v.setUint32(38,0,true);
-  v.setUint32(42,offset,true);b.set(name,46);return b;
+function mkCD(n, s, c, now, offset) {
+  const b = new Uint8Array(46 + n.length), v = new DataView(b.buffer);
+  v.setUint32(0,0x02014b50,true); v.setUint16(4,20,true); v.setUint16(6,20,true);
+  v.setUint16(8,0,true); v.setUint16(10,0,true);
+  v.setUint16(12,now.time,true); v.setUint16(14,now.date,true);
+  v.setUint32(16,c,true); v.setUint32(20,s,true); v.setUint32(24,s,true);
+  v.setUint16(28,n.length,true); v.setUint16(30,0,true); v.setUint16(32,0,true);
+  v.setUint16(34,0,true); v.setUint16(36,0,true); v.setUint32(38,0,true);
+  v.setUint32(42,offset,true); b.set(n,46); return b;
 }
 
 function mkEOCD(count, cdSize, cdOffset) {
-  const b=new Uint8Array(22),v=new DataView(b.buffer);
-  v.setUint32(0,0x06054b50,true);v.setUint16(4,0,true);v.setUint16(6,0,true);
-  v.setUint16(8,count,true);v.setUint16(10,count,true);
-  v.setUint32(12,cdSize,true);v.setUint32(16,cdOffset,true);v.setUint16(20,0,true);
+  const b = new Uint8Array(22), v = new DataView(b.buffer);
+  v.setUint32(0,0x06054b50,true); v.setUint16(4,0,true); v.setUint16(6,0,true);
+  v.setUint16(8,count,true); v.setUint16(10,count,true);
+  v.setUint32(12,cdSize,true); v.setUint32(16,cdOffset,true); v.setUint16(20,0,true);
   return b;
 }
 
 function dosNow() {
-  const d=new Date();
+  const d = new Date();
   return {
-    date:((d.getFullYear()-1980)<<9)|((d.getMonth()+1)<<5)|d.getDate(),
-    time:(d.getHours()<<11)|(d.getMinutes()<<5)|(d.getSeconds()>>1),
+    date: ((d.getFullYear()-1980)<<9)|((d.getMonth()+1)<<5)|d.getDate(),
+    time: (d.getHours()<<11)|(d.getMinutes()<<5)|(d.getSeconds()>>1),
   };
 }
 
 function crc32(data) {
-  let c=0xFFFFFFFF;
-  for(let i=0;i<data.length;i++){c^=data[i];for(let j=0;j<8;j++)c=(c>>>1)^(c&1?0xEDB88320:0);}
-  return(c^0xFFFFFFFF)>>>0;
+  let c = 0xFFFFFFFF;
+  for (let i = 0; i < data.length; i++) {
+    c ^= data[i];
+    for (let j = 0; j < 8; j++) c = (c >>> 1) ^ (c & 1 ? 0xEDB88320 : 0);
+  }
+  return (c ^ 0xFFFFFFFF) >>> 0;
 }
 
-// ── Byte / base64 utils ───────────────────────────────────────────────────────
+// ── Byte / Base64 utils ───────────────────────────────────────────────────────
 
 function concatBytes(...arrs) {
-  const total=arrs.reduce((n,a)=>n+a.length,0);
-  const out=new Uint8Array(total);let pos=0;
-  for(const a of arrs){out.set(a,pos);pos+=a.length;}
+  const total = arrs.reduce((n, a) => n + a.length, 0);
+  const out = new Uint8Array(total); let pos = 0;
+  for (const a of arrs) { out.set(a, pos); pos += a.length; }
   return out;
 }
 
-/** Decode a base64 string to Uint8Array — works with standard base64 only */
 function base64Decode(b64) {
-  const normalized = String(b64)
-    .trim()
-    .replace(/-/g, '+')
-    .replace(/_/g, '/');
-
-  const padded = normalized + '='.repeat((4 - normalized.length % 4) % 4);
+  const padded = b64 + '==='.slice(0, (4 - b64.length % 4) % 4);
   const bin = atob(padded);
   const out = new Uint8Array(bin.length);
-
-  for (let i = 0; i < bin.length; i++) {
-    out[i] = bin.charCodeAt(i);
-  }
+  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
   return out;
 }
 
-/** Encode a plain JS object to base64url JWT segment */
-function objToB64url(obj) {
-  const json = JSON.stringify(obj);
-  // Encode UTF-8 → bytes → base64 → base64url
-  const bytes = new TextEncoder().encode(json);
-  return bytesToB64url(bytes);
-}
-
-/** Encode Uint8Array to base64url */
-function bytesToB64url(bytes) {
+function bytesToBase64(bytes) {
   let bin = '';
   for (const b of bytes) bin += String.fromCharCode(b);
-  return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  return btoa(bin);
+}
+
+function objToB64url(obj) {
+  return bytesToB64url(new TextEncoder().encode(JSON.stringify(obj)));
+}
+
+function bytesToB64url(bytes) {
+  return bytesToBase64(bytes).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
