@@ -115,7 +115,7 @@ async function sendEmail(apiKey, { to, subject, name, date, attachments }) {
   `;
 
   const body = {
-    from:        'CDC Inc. Website <noreply@cdcfa.org>',
+    from:        'CDC Inc. Website <onboarding@resend.dev>',
     to:          [to],
     subject,
     html,
