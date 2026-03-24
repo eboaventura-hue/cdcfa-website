@@ -1,75 +1,33 @@
-# CDC Inc. — Cloudflare Pages via Git
+# CDC Inc. — Cloudflare Pages
 
-## 📋 Dashboard Settings (CRITICAL)
+## Environment Variables Required
 
-When connecting via GitHub/GitLab, configure these EXACT settings in Cloudflare:
+| Variable | Where to get it |
+|----------|----------------|
+| `GOOGLE_SERVICE_ACCOUNT` | Service account JSON (already configured) |
+| `RESEND_API_KEY` | Create free account at resend.com → API Keys |
 
-```
-Framework preset:      None
-Build command:         npm run deploy
-Build output directory: .
-Root directory:        /  (or wherever cdcfa-site is in your repo)
-Node.js version:       18
-```
+## Setup RESEND_API_KEY (required for email)
 
-## 🔑 Environment Variables (Settings → Environment variables)
+1. Go to https://resend.com and create a free account
+2. Add your domain `cdcfa.org` under Domains → Verify DNS records
+3. Go to API Keys → Create API Key
+4. In Cloudflare: Settings → Environment variables → Add `RESEND_API_KEY`
 
-Add this variable in BOTH Production and Preview:
-- Name:  GOOGLE_SERVICE_ACCOUNT
-- Value: (paste the full service account JSON)
-- Check: Encrypt
+## Cloudflare Build Settings
 
----
+| Field | Value |
+|-------|-------|
+| Build command | `npm run build` |
+| Build output directory | `.` |
+| Node.js version | `18` |
 
-## 📁 Repo structure expected by Cloudflare
+## What happens on form submit
 
-Push ONLY the contents of cdcfa-site/ to your repo root:
+1. Browser sends form data to `/submit-application`
+2. Function builds 4 files: PDF EN, PDF ES, DOCX EN, DOCX ES
+3. All 4 sent as email attachments to `digitalforms@cdcfa.org`
+4. EN PDF + DOCX uploaded to Google Drive
 
-```
-your-repo/
-├── index.html
-├── package.json          ← Cloudflare runs: npm run deploy
-├── wrangler.toml
-├── _routes.json
-├── _headers
-├── .gitignore
-├── app.js
-├── styles.css
-├── functions/
-│   └── submit-application.js
-├── images/
-│   └── *.jpg / *.png
-├── waitlist_fillable_EN.pdf
-└── wait_list_app_2024_spanish__2_.pdf
-```
-
-## 🚀 Quick Start
-
-```bash
-# 1. Create a new repo on GitHub (e.g. cdcfa-site)
-
-# 2. Extract this ZIP and push to GitHub
-unzip cdcfa-final.zip
-cd site_work/cdcfa-site
-git init
-git add .
-git commit -m "Initial deploy"
-git remote add origin https://github.com/YOUR_USER/cdcfa-site.git
-git push -u origin main
-
-# 3. In Cloudflare Dashboard:
-#    Workers & Pages → Create → Pages → Connect to Git
-#    Select your repo → Configure build settings as above → Deploy
-```
-
-## ⚙️ How the form submission works
-
-1. User fills the Apply Now form → clicks Submit
-2. Browser POSTs JSON to /submit-application (Cloudflare Pages Function)
-3. Function authenticates with Google via service account JWT
-4. Generates PDF + DOCX with form data
-5. Uploads both files to Google Drive folder: 10LPRmu3Th3undReIjBURPoD0EoprQzn
-6. Files named: FamilyName_YYYY-MM-DD_EN.pdf / .docx
-
-## 📞 Support
-registration@cdcfa.org · (310) 518-0776
+## Google Drive Folder
+https://drive.google.com/drive/folders/1zxZSkTIue0_wXhaeO7_94EwZmnqcQjuk
