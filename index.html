@@ -416,6 +416,7 @@ body { font-family: 'Nunito', sans-serif; background: #fff; color: #1e0a3c; over
   <div class="navbar__links">
     <button class="navbar__btn" onclick="navTo('about')">🏫 About Us</button>
     <button class="navbar__btn" onclick="navTo('programs')">🎨 Programs</button>
+    <button class="navbar__btn" onclick="navTo('nutrition')">🥗 Nutrition</button>
     <button class="navbar__btn" onclick="navTo('locations')">📍 Locations</button>
     <button class="navbar__btn" onclick="navTo('contact')">💌 Contact</button>
     <button class="navbar__btn navbar__btn--apply" onclick="showPage('apply')">⭐ Apply Now</button>
@@ -468,7 +469,7 @@ body { font-family: 'Nunito', sans-serif; background: #fff; color: #1e0a3c; over
             <div class="carousel__overlay"></div>
             <div class="carousel__caption">
               <div class="carousel__caption-title">A Safe Space for<br><span style="color:#4ade80;">Every Family</span> 🏡</div>
-              <div class="carousel__caption-sub">5 locations — Carson, Lomita, Wilmington, Torrance &amp; Avalon.</div>
+              <div class="carousel__caption-sub">4 locations — Carson, Lomita, Wilmington &amp; Torrance.</div>
             </div>
           </div>
           <div class="carousel__slide">
@@ -541,6 +542,51 @@ body { font-family: 'Nunito', sans-serif; background: #fff; color: #1e0a3c; over
         <p class="program-card__body">Safe, enriching after-school care combining homework support, creative projects, and social development in a welcoming, community-centered space.</p>
         <button class="program-card__link" onclick="showPage('apply')">Enroll Today →</button>
       </div>
+    </div>
+  </section>
+
+  <!-- NUTRITION SERVICES -->
+  <section class="section" id="nutrition">
+    <div style="text-align:center;max-width:640px;margin:0 auto 3rem">
+      <div class="section__tag" data-reveal>Healthy Kids</div>
+      <h2 class="section__title" data-reveal data-delay="1">Nutrition <span class="crayon">Services</span> 🥗</h2>
+      <p class="section__body" data-reveal data-delay="2">Fresh, nutritious meals cooked daily and delivered to every center — because growing minds need great fuel! 🌽</p>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.5rem;max-width:1100px;margin:0 auto 2.5rem;" data-reveal>
+
+      <!-- Meal card -->
+      <div style="background:#fff;border-radius:24px;padding:2rem;border:2px solid var(--border);box-shadow:0 2px 12px rgba(124,58,237,.07);">
+        <div style="font-size:2.2rem;margin-bottom:.75rem">🍳</div>
+        <h3 style="font-family:'Fredoka One',cursive;font-size:1.25rem;color:#1e0a3c;margin-bottom:.6rem">Fresh Daily Meals</h3>
+        <p style="font-size:.93rem;color:var(--muted);line-height:1.7">Our <strong>Central Kitchen in Carson</strong> cooks fresh meals every day and delivers <strong>Breakfast, Lunch, and PM Snack</strong> to all our centers.</p>
+      </div>
+
+      <!-- CACFP card -->
+      <div style="background:#fff;border-radius:24px;padding:2rem;border:2px solid var(--border);box-shadow:0 2px 12px rgba(124,58,237,.07);">
+        <div style="font-size:2.2rem;margin-bottom:.75rem">🏛️</div>
+        <h3 style="font-family:'Fredoka One',cursive;font-size:1.25rem;color:#1e0a3c;margin-bottom:.6rem">CACFP Compliant</h3>
+        <p style="font-size:.93rem;color:var(--muted);line-height:1.7">We operate in accordance with the <strong>Child and Adult Care Food Program (CACFP)</strong> to provide nutritious and diverse meals that meet federal guidelines.</p>
+      </div>
+
+      <!-- Menus card -->
+      <div style="background:#fff;border-radius:24px;padding:2rem;border:2px solid var(--border);box-shadow:0 2px 12px rgba(124,58,237,.07);">
+        <div style="font-size:2.2rem;margin-bottom:.75rem">📋</div>
+        <h3 style="font-family:'Fredoka One',cursive;font-size:1.25rem;color:#1e0a3c;margin-bottom:.6rem">Multilingual Menus</h3>
+        <p style="font-size:.93rem;color:var(--muted);line-height:1.7">Menus are shared with families in <strong>English, Spanish, and Portuguese</strong>. Every <strong>Thursday</strong> we feature recipes contributed by our families and staff! 🍽️</p>
+      </div>
+    </div>
+
+    <!-- Legal / USDA notices -->
+    <div style="max-width:800px;margin:0 auto;background:var(--purple-light);border-radius:20px;padding:1.75rem 2rem;border:2px solid rgba(124,58,237,.15);" data-reveal>
+      <p style="font-size:.9rem;color:#3b1f6e;line-height:1.8;margin:0 0 .9rem">
+        🏛️ <a href="https://www.usda.gov/non-discrimination-statement" target="_blank" rel="noopener" style="color:var(--purple);font-weight:700;text-decoration:underline;">View the USDA Non-Discrimination Statement</a>
+      </p>
+      <p style="font-size:.87rem;color:#4a2880;line-height:1.75;margin:0">
+        <strong>Civil Rights Complaints</strong> may be submitted to the CDSS-CACFP Branch:
+        📞 <a href="tel:9166515400" style="color:var(--purple);font-weight:700;">916-651-5400</a> &nbsp;·&nbsp;
+        📧 <a href="mailto:CACFPCivilRights@dss.ca.gov" style="color:var(--purple);font-weight:700;">CACFPCivilRights@dss.ca.gov</a> &nbsp;·&nbsp;
+        📝 <a href="https://www.surveymonkey.com/r/FBKKNZX" target="_blank" rel="noopener" style="color:var(--purple);font-weight:700;text-decoration:underline;">Online Complaint Form</a>
+      </p>
     </div>
   </section>
 
@@ -625,14 +671,6 @@ body { font-family: 'Nunito', sans-serif; background: #fff; color: #1e0a3c; over
         <div class="map-card__phone" style="color:#fde68a;">(424) 304-2294</div>
         <div class="map-card__hours">M–F 7am–6pm · Ages 18mo–12yr</div>
         <div class="map-card__btn" style="background:rgba(251,191,36,.18);color:#fde68a;">Get Directions →</div>
-      </a>
-      <a href="https://maps.google.com/?q=22036+Avalon+Blvd+Carson+CA+90745" target="_blank" class="map-card" style="border-color:rgba(244,114,182,.3);" onmouseover="this.style.background='rgba(244,114,182,.1)';this.style.borderColor='#f472b6'" onmouseout="this.style.background='rgba(255,255,255,.06)';this.style.borderColor='rgba(244,114,182,.3)'">
-        <div class="map-card__icon">📋</div>
-        <div class="map-card__name">Avalon Office</div>
-        <div class="map-card__addr">22036 Avalon Blvd.<br>Carson, CA 90745</div>
-        <div class="map-card__phone" style="color:#f9a8d4;">(310) 834-6021</div>
-        <div class="map-card__hours">&nbsp;</div>
-        <div class="map-card__btn" style="background:rgba(244,114,182,.18);color:#f9a8d4;">Get Directions →</div>
       </a>
     </div>
   </section>
@@ -721,7 +759,7 @@ body { font-family: 'Nunito', sans-serif; background: #fff; color: #1e0a3c; over
         </div>
         <button class="add-child-btn" onclick="addChild()">+ Add Another Child</button>
         <div class="apply-form__section-head">📍 Section 3 — Preferred Location</div>
-        <div class="form-group"><label class="form-group__label">Preferred Site *</label><select class="form-group__select"><option value="">Select a site…</option><option>Main Office — Carson</option><option>Wilmington Center</option><option>Lomita Center</option><option>Torrance Center &amp; FCCH Hub</option><option>Avalon Office</option><option>Family Child Care Home (Provider Network)</option></select></div>
+        <div class="form-group"><label class="form-group__label">Preferred Site *</label><select class="form-group__select"><option value="">Select a site…</option><option>Main Office — Carson</option><option>Wilmington Center</option><option>Lomita Center</option><option>Torrance Center &amp; FCCH Hub</option><option>Family Child Care Home (Provider Network)</option></select></div>
         <div class="form-group"><label class="form-group__label">FCCH Provider Name (if applicable)</label><input class="form-group__input" type="text" placeholder="Provider name"></div>
         <div class="apply-form__section-head">💼 Section 4 — Need &amp; Eligibility</div>
         <div class="form-group"><label class="form-group__label">Type of Need (check all that apply)</label>
@@ -775,6 +813,7 @@ body { font-family: 'Nunito', sans-serif; background: #fff; color: #1e0a3c; over
   <div class="footer__links">
     <button class="footer__link" onclick="navTo('about')">About Us</button>
     <button class="footer__link" onclick="navTo('programs')">Programs</button>
+    <button class="footer__link" onclick="navTo('nutrition')">Nutrition</button>
     <button class="footer__link" onclick="navTo('locations')">Locations</button>
     <button class="footer__link" onclick="navTo('contact')">Contact</button>
     <button class="footer__link" onclick="showPage('apply')">Apply Now</button>
@@ -1074,7 +1113,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return L.divIcon({ html: svg, iconSize: [40, 56], iconAnchor: [20, 56], popupAnchor: [0, -58], className: '' });
     }
 
-    var locs = [{"lat": 33.8311, "lng": -118.2832, "color": "#7c3aed", "label": "MO", "name": "Main Office — Carson", "addr": "23734 S. Main St., Carson, CA 90745", "phone": "(310) 518-0776", "hours": "M–F 9:00am – 5:00pm", "ages": "Administrative Office"}, {"lat": 33.7893, "lng": -118.2655, "color": "#38bdf8", "label": "WC", "name": "Wilmington Center", "addr": "931 N. Frigate Ave., Wilmington, CA 90744", "phone": "(310) 518-8854", "hours": "M–F 7:00am – 6:00pm", "ages": "Ages 18mo – 5yr"}, {"lat": 33.7918, "lng": -118.3261, "color": "#4ade80", "label": "LC", "name": "Lomita Center", "addr": "2155 W. 240th St., Lomita, CA 90717", "phone": "(310) 707-1422", "hours": "M–F 7:00am – 6:00pm", "ages": "Ages 18mo – 5yr"}, {"lat": 33.8201, "lng": -118.3583, "color": "#fbbf24", "label": "TC", "name": "Torrance Center & FCCH Hub", "addr": "4120 W. 185th St., Torrance, CA 90504", "phone": "(424) 304-2294", "hours": "M–F 7:00am – 6:00pm", "ages": "Ages 18mo – 12yr"}, {"lat": 33.8278, "lng": -118.2543, "color": "#f472b6", "label": "AO", "name": "Avalon Office", "addr": "22036 Avalon Blvd., Carson, CA 90745", "phone": "(310) 834-6021", "hours": "", "ages": "Administrative Office"}];
+    var locs = [{"lat": 33.8311, "lng": -118.2832, "color": "#7c3aed", "label": "MO", "name": "Main Office — Carson", "addr": "23734 S. Main St., Carson, CA 90745", "phone": "(310) 518-0776", "hours": "M–F 9:00am – 5:00pm", "ages": "Administrative Office"}, {"lat": 33.7893, "lng": -118.2655, "color": "#38bdf8", "label": "WC", "name": "Wilmington Center", "addr": "931 N. Frigate Ave., Wilmington, CA 90744", "phone": "(310) 518-8854", "hours": "M–F 7:00am – 6:00pm", "ages": "Ages 18mo – 5yr"}, {"lat": 33.7918, "lng": -118.3261, "color": "#4ade80", "label": "LC", "name": "Lomita Center", "addr": "2155 W. 240th St., Lomita, CA 90717", "phone": "(310) 707-1422", "hours": "M–F 7:00am – 6:00pm", "ages": "Ages 18mo – 5yr"}, {"lat": 33.8201, "lng": -118.3583, "color": "#fbbf24", "label": "TC", "name": "Torrance Center & FCCH Hub", "addr": "4120 W. 185th St., Torrance, CA 90504", "phone": "(424) 304-2294", "hours": "M–F 7:00am – 6:00pm", "ages": "Ages 18mo – 12yr"}];
 
     locs.forEach(function(loc) {
       var popup = '<div style="font-family:Arial,sans-serif;min-width:210px;padding:4px 2px;">'
