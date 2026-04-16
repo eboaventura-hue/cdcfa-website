@@ -306,9 +306,14 @@ body { font-family: 'Nunito', sans-serif; background: #fff; color: #1e0a3c; over
 /* ════════════════════════════════
    USDA / CIVIL RIGHTS HIGHLIGHT
 ════════════════════════════════ */
-.usda-highlight {
+.usda-highlight__wrap {
   background: linear-gradient(135deg, #3b1f6e 0%, #7c3aed 100%);
   padding: 2.25rem 1.5rem;
+  margin-top: 2rem;
+  border-radius: 24px;
+  max-width: 1100px;
+  margin-left: auto;
+  margin-right: auto;
 }
 .usda-highlight__inner {
   max-width: 900px; margin: 0 auto;
@@ -805,43 +810,30 @@ body { font-family: 'Nunito', sans-serif; background: #fff; color: #1e0a3c; over
       </div>
     </div>
 
-    <!-- Legal / USDA notices -->
-    <div style="max-width:800px;margin:0 auto;background:var(--purple-light);border-radius:20px;padding:1.75rem 2rem;border:2px solid rgba(124,58,237,.15);" data-reveal>
-      <p style="font-size:.9rem;color:#3b1f6e;line-height:1.8;margin:0 0 .9rem">
-        🏛️ <a href="https://www.usda.gov/non-discrimination-statement" target="_blank" rel="noopener" style="color:var(--purple);font-weight:700;text-decoration:underline;">View the USDA Non-Discrimination Statement</a>
-      </p>
-      <p style="font-size:.87rem;color:#4a2880;line-height:1.75;margin:0">
-        <strong>Civil Rights Complaints</strong> may be submitted to the CDSS-CACFP Branch:
-        📞 <a href="tel:9166515400" style="color:var(--purple);font-weight:700;">916-651-5400</a> &nbsp;·&nbsp;
-        📧 <a href="mailto:CACFPCivilRights@dss.ca.gov" style="color:var(--purple);font-weight:700;">CACFPCivilRights@dss.ca.gov</a> &nbsp;·&nbsp;
-        📝 <a href="https://www.surveymonkey.com/r/FBKKNZX" target="_blank" rel="noopener" style="color:var(--purple);font-weight:700;text-decoration:underline;">Online Complaint Form</a>
-      </p>
-    </div>
-  </section>
-
-  <!-- USDA / CIVIL RIGHTS HIGHLIGHT -->
-  <section class="usda-highlight" id="usda-notice">
-    <div class="usda-highlight__inner">
-      <div class="usda-highlight__icon">🏛️</div>
-      <div class="usda-highlight__body">
-        <a class="usda-highlight__title" href="https://www.usda.gov/non-discrimination-statement" target="_blank" rel="noopener">
-          View the USDA Non-Discrimination Statement ↗
-        </a>
-        <p class="usda-highlight__text">
-          Civil Rights complaints may be submitted to the CDSS-CACFP Branch:
-        </p>
-        <div class="usda-highlight__contacts">
-          <a class="usda-highlight__contact" href="tel:9166515400">
-            <span class="usda-highlight__contact-icon">📞</span>916-651-5400
+    <!-- USDA / Civil Rights Highlight -->
+    <div class="usda-highlight__wrap">
+      <div class="usda-highlight__inner">
+        <div class="usda-highlight__icon">🏛️</div>
+        <div class="usda-highlight__body">
+          <a class="usda-highlight__title" href="https://www.usda.gov/non-discrimination-statement" target="_blank" rel="noopener">
+            View the USDA Non-Discrimination Statement ↗
           </a>
-          <span class="usda-highlight__sep">·</span>
-          <a class="usda-highlight__contact" href="mailto:CACFPCivilRights@dss.ca.gov">
-            <span class="usda-highlight__contact-icon">📧</span>CACFPCivilRights@dss.ca.gov
-          </a>
-          <span class="usda-highlight__sep">·</span>
-          <a class="usda-highlight__contact" href="https://www.surveymonkey.com/r/FBKKNZX" target="_blank" rel="noopener">
-            <span class="usda-highlight__contact-icon">📝</span>Online Complaint Form
-          </a>
+          <p class="usda-highlight__text">
+            Civil Rights complaints may be submitted to the CDSS-CACFP Branch:
+          </p>
+          <div class="usda-highlight__contacts">
+            <a class="usda-highlight__contact" href="tel:9166515400">
+              <span class="usda-highlight__contact-icon">📞</span>916-651-5400
+            </a>
+            <span class="usda-highlight__sep">·</span>
+            <a class="usda-highlight__contact" href="mailto:CACFPCivilRights@dss.ca.gov">
+              <span class="usda-highlight__contact-icon">📧</span>CACFPCivilRights@dss.ca.gov
+            </a>
+            <span class="usda-highlight__sep">·</span>
+            <a class="usda-highlight__contact" href="https://www.surveymonkey.com/r/FBKKNZX" target="_blank" rel="noopener">
+              <span class="usda-highlight__contact-icon">📝</span>Online Complaint Form
+            </a>
+          </div>
         </div>
       </div>
     </div>
