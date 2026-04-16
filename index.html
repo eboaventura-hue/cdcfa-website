@@ -367,6 +367,27 @@ body { font-family: 'Nunito', sans-serif; background: #fff; color: #1e0a3c; over
 /* Hide the duplicate bottom enroll button when panel is open */
 .program-card.expanded > .program-card__link:last-child { display: none; }
 /* ════════════════════════════════
+   APPLY FORM — INLINE ERROR
+════════════════════════════════ */
+.apply-error {
+  display: none; align-items: flex-start; gap: 1rem;
+  background: #fff7ed; border: 2px solid #fb923c;
+  border-radius: 16px; padding: 1.25rem 1.5rem; margin-top: 1rem;
+}
+.apply-error__icon { font-size: 1.6rem; flex-shrink: 0; line-height: 1; }
+.apply-error strong { font-size: 1rem; color: #9a3412; font-family: 'Fredoka One', cursive; }
+.apply-error p { font-size: .86rem; color: #7c2d12; font-weight: 600; line-height: 1.6; margin: .4rem 0; }
+.apply-error__btn {
+  display: inline-flex; align-items: center; gap: .4rem;
+  background: var(--purple); color: #fff; text-decoration: none;
+  font-size: .88rem; font-weight: 800; font-family: 'Nunito', sans-serif;
+  padding: .55rem 1.25rem; border-radius: 100px; margin: .5rem 0;
+  transition: background .18s;
+}
+.apply-error__btn:hover { background: var(--purple-dark); }
+.apply-error__alt { font-size: .8rem !important; color: #92400e !important; margin-top: .25rem !important; }
+
+/* ════════════════════════════════
    PROGRAM ENTRIES (detailed list)
 ════════════════════════════════ */
 .prog-list {
@@ -1344,7 +1365,27 @@ async function submitApply(e) {
   } catch (err) {
     btn.disabled = false;
     btn.textContent = 'Submit Application 🚀';
-    alert('⚠️ Submission failed: ' + err.message + '\n\nPlease email the form to registration@cdcfa.org');
+
+    // Show inline friendly error — never expose raw error to user
+    let errBox = document.getElementById('apply-error');
+    if (!errBox) {
+      errBox = document.createElement('div');
+      errBox.id = 'apply-error';
+      errBox.className = 'apply-error';
+      btn.parentNode.insertBefore(errBox, btn.nextSibling);
+    }
+    errBox.innerHTML =
+      '<div class="apply-error__icon">⚠️</div>' +
+      '<div>' +
+        '<strong>Online submission is temporarily unavailable.</strong>' +
+        '<p>Please send your application directly to our team — we'll process it right away:</p>' +
+        '<a class="apply-error__btn" href="mailto:registration@cdcfa.org?subject=Child%20Care%20Application">' +
+          '📧 Email registration@cdcfa.org' +
+        '</a>' +
+        '<p class="apply-error__alt">Or download the fillable PDF below and drop it off at any location.</p>' +
+      '</div>';
+    errBox.style.display = 'flex';
+    errBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
 }
 
