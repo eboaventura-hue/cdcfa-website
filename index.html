@@ -635,7 +635,6 @@ body { font-family: 'Nunito', sans-serif; background: #fff; color: #1e0a3c; over
   <div class="navbar__links">
     <button class="navbar__btn" onclick="navTo('about')">🏫 About Us</button>
     <button class="navbar__btn" onclick="navTo('programs')">🎨 Programs</button>
-    <button class="navbar__btn" onclick="navTo('nutrition')">🥗 Nutrition</button>
     <button class="navbar__btn" onclick="navTo('locations')">📍 Locations</button>
     <button class="navbar__btn" onclick="navTo('contact')">💌 Contact</button>
     <button class="navbar__btn navbar__btn--apply" onclick="showPage('apply')">⭐ Apply Now</button>
@@ -845,66 +844,27 @@ body { font-family: 'Nunito', sans-serif; background: #fff; color: #1e0a3c; over
     </div>
   </section>
 
-  <!-- NUTRITION SERVICES -->
-  <section class="section" id="nutrition">
-    <div style="text-align:center;max-width:640px;margin:0 auto 3rem">
-      <div class="section__tag" data-reveal>Healthy Kids</div>
-      <h2 class="section__title" data-reveal data-delay="1">Nutrition <span class="crayon">Services</span> 🥗</h2>
-      <p class="section__body" data-reveal data-delay="2">Fresh, nutritious meals cooked daily and delivered to every center — because growing minds need great fuel! 🌽</p>
-    </div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.5rem;max-width:1100px;margin:0 auto 2.5rem;" data-reveal>
 
-      <!-- Meal card -->
-      <div style="background:#fff;border-radius:24px;padding:2rem;border:2px solid var(--border);box-shadow:0 2px 12px rgba(124,58,237,.07);">
-        <div style="font-size:2.2rem;margin-bottom:.75rem">🍳</div>
-        <h3 style="font-family:'Fredoka One',cursive;font-size:1.25rem;color:#1e0a3c;margin-bottom:.6rem">Fresh Daily Meals</h3>
-        <p style="font-size:.93rem;color:var(--muted);line-height:1.7">Our <strong>Central Kitchen in Carson</strong> cooks fresh meals every day and delivers <strong>Breakfast, Lunch, and PM Snack</strong> to all our centers.</p>
-      </div>
-
-      <!-- CACFP card -->
-      <div style="background:#fff;border-radius:24px;padding:2rem;border:2px solid var(--border);box-shadow:0 2px 12px rgba(124,58,237,.07);">
-        <div style="font-size:2.2rem;margin-bottom:.75rem">🏛️</div>
-        <h3 style="font-family:'Fredoka One',cursive;font-size:1.25rem;color:#1e0a3c;margin-bottom:.6rem">CACFP Compliant</h3>
-        <p style="font-size:.93rem;color:var(--muted);line-height:1.7">We operate in accordance with the <strong>Child and Adult Care Food Program (CACFP)</strong> to provide nutritious and diverse meals that meet federal guidelines.</p>
-      </div>
-
-      <!-- Menus card -->
-      <div style="background:#fff;border-radius:24px;padding:2rem;border:2px solid var(--border);box-shadow:0 2px 12px rgba(124,58,237,.07);">
-        <div style="font-size:2.2rem;margin-bottom:.75rem">📋</div>
-        <h3 style="font-family:'Fredoka One',cursive;font-size:1.25rem;color:#1e0a3c;margin-bottom:.6rem">Multilingual Menus</h3>
-        <p style="font-size:.93rem;color:var(--muted);line-height:1.7">Menus are shared with families in <strong>English, Spanish, and Portuguese</strong>. Every <strong>Thursday</strong> we feature recipes contributed by our families and staff! 🍽️</p>
+  <!-- USDA NOTICE -->
+  <div style="background:linear-gradient(135deg,#3b1f6e 0%,#7c3aed 100%);padding:2.5rem 1.5rem;">
+    <div style="max-width:900px;margin:0 auto;display:flex;align-items:flex-start;gap:1.25rem;background:rgba(255,255,255,.1);border:2px solid rgba(255,255,255,.22);border-radius:20px;padding:1.75rem 2rem;">
+      <div style="font-size:2rem;flex-shrink:0;line-height:1;">🏛️</div>
+      <div>
+        <a href="https://www.usda.gov/non-discrimination-statement" target="_blank" rel="noopener"
+           style="font-family:'Fredoka One',cursive;font-size:1.15rem;color:#fff;text-decoration:none;border-bottom:2px solid rgba(255,255,255,.45);padding-bottom:.1rem;display:inline-block;margin-bottom:.75rem;">
+          View the USDA Non-Discrimination Statement ↗
+        </a>
+        <p style="font-size:.9rem;color:rgba(255,255,255,.9);font-weight:600;line-height:1.7;margin:0;">
+          Civil Rights Complaints may be submitted to the CDSS-CACFP Branch at
+          <a href="tel:9166515400" style="color:#fff;font-weight:800;">916-651-5400</a>,
+          by email at
+          <a href="mailto:CACFPCivilRights@dss.ca.gov" style="color:#fff;font-weight:800;">CACFPCivilRights@dss.ca.gov</a>,
+          or by using
+          <a href="https://www.surveymonkey.com/r/FBKKNZX" target="_blank" rel="noopener" style="color:#fff;font-weight:800;text-decoration:underline;">this online form</a>.
+        </p>
       </div>
     </div>
-
-    <!-- USDA / Civil Rights Highlight -->
-    <div class="usda-highlight__wrap">
-      <div class="usda-highlight__inner">
-        <div class="usda-highlight__icon">🏛️</div>
-        <div class="usda-highlight__body">
-          <a class="usda-highlight__title" href="https://www.usda.gov/non-discrimination-statement" target="_blank" rel="noopener">
-            View the USDA Non-Discrimination Statement ↗
-          </a>
-          <p class="usda-highlight__text">
-            Civil Rights complaints may be submitted to the CDSS-CACFP Branch:
-          </p>
-          <div class="usda-highlight__contacts">
-            <a class="usda-highlight__contact" href="tel:9166515400">
-              <span class="usda-highlight__contact-icon">📞</span>916-651-5400
-            </a>
-            <span class="usda-highlight__sep">·</span>
-            <a class="usda-highlight__contact" href="mailto:CACFPCivilRights@dss.ca.gov">
-              <span class="usda-highlight__contact-icon">📧</span>CACFPCivilRights@dss.ca.gov
-            </a>
-            <span class="usda-highlight__sep">·</span>
-            <a class="usda-highlight__contact" href="https://www.surveymonkey.com/r/FBKKNZX" target="_blank" rel="noopener">
-              <span class="usda-highlight__contact-icon">📝</span>Online Complaint Form
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
+  </div>
 
   <!-- ABOUT -->
   <section class="section" id="about">
