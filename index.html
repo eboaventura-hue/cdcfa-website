@@ -256,6 +256,56 @@ body { font-family: 'Nunito', sans-serif; background: #fff; color: #1e0a3c; over
 .program-card__body { font-size: .87rem; color: var(--muted); line-height: 1.65; font-weight: 600; }
 .program-card__link { display: inline-flex; align-items: center; gap: .4rem; margin-top: 1.2rem; font-size: .85rem; font-weight: 800; color: var(--purple); background: none; border: none; cursor: pointer; font-family: 'Nunito', sans-serif; transition: gap .18s; }
 .program-card__link:hover { gap: .7rem; }
+/* ════════════════════════════════
+   PROGRAM CARD — EXPANDABLE PANEL
+════════════════════════════════ */
+.program-card__toggle {
+  display: flex; align-items: center; gap: .45rem;
+  margin-top: 1rem; background: none; border: none;
+  font-size: .82rem; font-weight: 700; cursor: pointer;
+  color: var(--muted); transition: color .18s; padding: 0;
+}
+.program-card--pink  .program-card__toggle:hover { color: #be185d; }
+.program-card--sky   .program-card__toggle:hover { color: #0369a1; }
+.program-card--green .program-card__toggle:hover { color: #15803d; }
+.program-card__chevron {
+  font-size: 1.1rem; line-height: 1; display: inline-block;
+  transition: transform .28s cubic-bezier(.4,0,.2,1);
+}
+.program-card__toggle[aria-expanded="true"] .program-card__chevron { transform: rotate(180deg); }
+.program-card__toggle[aria-expanded="true"] .program-card__toggle-label { opacity: .7; }
+.program-card__detail {
+  max-height: 0; overflow: hidden;
+  transition: max-height .4s cubic-bezier(.4,0,.2,1), opacity .3s ease;
+  opacity: 0;
+}
+.program-card__detail.open {
+  max-height: 400px; opacity: 1;
+}
+.program-card__detail-inner {
+  padding: 1.1rem 0 .4rem;
+  border-top: 1.5px solid var(--border);
+  margin-top: .9rem;
+}
+.program-card__features {
+  list-style: none; padding: 0; margin: 0 0 1rem;
+  display: flex; flex-direction: column; gap: .55rem;
+}
+.program-card__features li {
+  font-size: .84rem; color: var(--muted); font-weight: 600;
+  line-height: 1.5; padding-left: 1.3rem; position: relative;
+}
+.program-card__features li::before {
+  content: "✓"; position: absolute; left: 0;
+  font-weight: 800; font-size: .78rem;
+}
+.program-card--pink  .program-card__features li::before { color: #be185d; }
+.program-card--sky   .program-card__features li::before { color: #0369a1; }
+.program-card--green .program-card__features li::before { color: #15803d; }
+.program-card__link--detail { margin-top: .5rem; }
+/* Hide the duplicate bottom enroll button when panel is open */
+.program-card.expanded > .program-card__link:last-child { display: none; }
+
 
 /* ════════════════════════════════
    ABOUT
@@ -592,30 +642,82 @@ body { font-family: 'Nunito', sans-serif; background: #fff; color: #1e0a3c; over
       <p class="section__body" data-reveal data-delay="2">From first steps to after school — we meet your family where you are! 🌈</p>
     </div>
     <div class="programs-grid">
+
+      <!-- Card 1: Family Child Care Home -->
       <div class="program-card program-card--pink" data-reveal>
         <div class="program-card__deco"></div>
         <span class="program-card__emoji">🍼</span>
         <span class="program-card__age">Ages 3 months – 5 years</span>
         <h3 class="program-card__title">Family Child Care Home</h3>
-        <p class="program-card__body">Licensed home-based providers offer warm, personalized infant and toddler care in a cozy family-like setting — tailored to your child's unique needs.</p>
-        <button class="program-card__link" onclick="showPage('apply')">Enroll Today →</button>
+        <p class="program-card__body">Licensed home-based providers offer warm, personalized care for infants and toddlers in a cozy, family-like environment — tailored to your child's unique needs.</p>
+        <button class="program-card__toggle" onclick="toggleProgram(this)" aria-expanded="false">
+          <span class="program-card__toggle-label">Learn More</span>
+          <span class="program-card__chevron">&#8964;</span>
+        </button>
+        <div class="program-card__detail">
+          <div class="program-card__detail-inner">
+            <ul class="program-card__features">
+              <li>Small, home-based groups for maximum individual attention</li>
+              <li>Flexible hours to fit your family's schedule</li>
+              <li>Nurturing caregivers with specialized infant &amp; toddler training</li>
+              <li>Daily routines that mirror the warmth of home</li>
+              <li>Nutritious CACFP-compliant meals included</li>
+            </ul>
+            <button class="program-card__link program-card__link--detail" onclick="showPage('apply')">Enroll Today →</button>
+          </div>
+        </div>
       </div>
+
+      <!-- Card 2: Toddler & Preschool -->
       <div class="program-card program-card--sky" data-reveal data-delay="1">
         <div class="program-card__deco"></div>
         <span class="program-card__emoji">🎨</span>
         <span class="program-card__age">Ages 2 – 5 years</span>
         <h3 class="program-card__title">Toddler &amp; Preschool</h3>
-        <p class="program-card__body">Our center-based program uses the High/Scope Curriculum — supporting cognitive, language, social, emotional, and physical growth through joyful play-based discovery.</p>
-        <button class="program-card__link" onclick="showPage('apply')">Enroll Today →</button>
+        <p class="program-card__body">Our center-based program follows the HighScope Curriculum, supporting cognitive, language, social, emotional, and physical development through joyful, play-based learning.</p>
+        <button class="program-card__toggle" onclick="toggleProgram(this)" aria-expanded="false">
+          <span class="program-card__toggle-label">Learn More</span>
+          <span class="program-card__chevron">&#8964;</span>
+        </button>
+        <div class="program-card__detail">
+          <div class="program-card__detail-inner">
+            <ul class="program-card__features">
+              <li>HighScope Curriculum — child-initiated, active learning</li>
+              <li>Certified teachers with early childhood education degrees</li>
+              <li>Language-rich classrooms supporting bilingual growth</li>
+              <li>Art, music, movement, and outdoor exploration daily</li>
+              <li>Kindergarten readiness built into every activity</li>
+            </ul>
+            <button class="program-card__link program-card__link--detail" onclick="showPage('apply')">Enroll Today →</button>
+          </div>
+        </div>
       </div>
+
+      <!-- Card 3: After-School Care -->
       <div class="program-card program-card--green" data-reveal data-delay="2">
         <div class="program-card__deco"></div>
         <span class="program-card__emoji">📚</span>
         <span class="program-card__age">Ages 5 – 12 years</span>
         <h3 class="program-card__title">After-School Care</h3>
-        <p class="program-card__body">Safe, enriching after-school care combining homework support, creative projects, and social development in a welcoming, community-centered space.</p>
-        <button class="program-card__link" onclick="showPage('apply')">Enroll Today →</button>
+        <p class="program-card__body">A safe and enriching after-school program that combines homework support, creative activities, and social development in a welcoming, community-focused environment.</p>
+        <button class="program-card__toggle" onclick="toggleProgram(this)" aria-expanded="false">
+          <span class="program-card__toggle-label">Learn More</span>
+          <span class="program-card__chevron">&#8964;</span>
+        </button>
+        <div class="program-card__detail">
+          <div class="program-card__detail-inner">
+            <ul class="program-card__features">
+              <li>Daily homework help from trained staff</li>
+              <li>STEAM projects, arts &amp; crafts, and enrichment clubs</li>
+              <li>Safe pickup directly from partnered local schools</li>
+              <li>Social-emotional learning woven into every session</li>
+              <li>Healthy afternoon snack provided daily</li>
+            </ul>
+            <button class="program-card__link program-card__link--detail" onclick="showPage('apply')">Enroll Today →</button>
+          </div>
+        </div>
       </div>
+
     </div>
   </section>
 
@@ -1150,6 +1252,31 @@ async function submitApply(e) {
   }
 }
 
+
+
+/* ─────────────────────────────────
+   PROGRAM CARD EXPAND / COLLAPSE
+───────────────────────────────── */
+function toggleProgram(btn) {
+  const card   = btn.closest('.program-card');
+  const panel  = card.querySelector('.program-card__detail');
+  const isOpen = panel.classList.contains('open');
+
+  // Close all other cards first
+  document.querySelectorAll('.program-card__detail.open').forEach(p => {
+    p.classList.remove('open');
+    p.closest('.program-card').classList.remove('expanded');
+    p.closest('.program-card').querySelector('.program-card__toggle').setAttribute('aria-expanded', 'false');
+  });
+
+  if (!isOpen) {
+    panel.classList.add('open');
+    card.classList.add('expanded');
+    btn.setAttribute('aria-expanded', 'true');
+    // Smooth scroll so panel is visible
+    setTimeout(() => card.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50);
+  }
+}
 
 /* ─────────────────────────────────
    LIGHTBOX
