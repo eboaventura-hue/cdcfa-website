@@ -363,6 +363,79 @@ body { font-family: 'Nunito', sans-serif; background: #fff; color: #1e0a3c; over
 
 /* Hide the duplicate bottom enroll button when panel is open */
 .program-card.expanded > .program-card__link:last-child { display: none; }
+/* ════════════════════════════════
+   PROGRAM ENTRIES (detailed list)
+════════════════════════════════ */
+.prog-list {
+  display: flex; flex-direction: column; gap: 4rem;
+  max-width: 1100px; margin: 0 auto;
+}
+.prog-entry {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 3rem;
+  align-items: center;
+}
+.prog-entry--reverse { direction: rtl; }
+.prog-entry--reverse > * { direction: ltr; }
+.prog-entry__media { position: relative; }
+.prog-entry__img {
+  width: 100%; aspect-ratio: 4/3; object-fit: cover;
+  border-radius: 24px;
+  box-shadow: 0 12px 40px rgba(124,58,237,.18);
+  border: 3px solid rgba(255,255,255,.8);
+  display: block;
+}
+.prog-entry__badge {
+  position: absolute; bottom: -1rem; left: 1.5rem;
+  font-size: .72rem; font-weight: 800; text-transform: uppercase;
+  letter-spacing: .07em; padding: .35rem 1rem; border-radius: 100px;
+  box-shadow: 0 4px 14px rgba(0,0,0,.12);
+}
+.prog-entry__badge--purple { background: var(--purple-light); color: var(--purple-dark); }
+.prog-entry__badge--sky    { background: var(--sky-light);    color: #0369a1; }
+.prog-entry__badge--pink   { background: var(--pink-light);   color: #be185d; }
+.prog-entry__badge--green  { background: var(--green-light);  color: #15803d; }
+.prog-entry__body { display: flex; flex-direction: column; gap: .85rem; }
+.prog-entry__title {
+  font-family: 'Fredoka One', cursive; font-size: 1.75rem;
+  color: var(--text); line-height: 1.2; margin: 0;
+}
+.prog-entry__text {
+  font-size: .93rem; color: var(--muted); line-height: 1.75;
+  font-weight: 600; margin: 0;
+}
+.prog-entry__btn {
+  display: inline-flex; align-items: center; gap: .4rem;
+  align-self: flex-start; margin-top: .4rem;
+  background: var(--purple); color: #fff; border: none;
+  font-family: 'Nunito', sans-serif; font-size: .88rem; font-weight: 800;
+  padding: .65rem 1.4rem; border-radius: 100px; cursor: pointer;
+  transition: background .18s, transform .15s, gap .18s;
+}
+.prog-entry__btn:hover { background: var(--purple-dark); transform: translateY(-2px); gap: .7rem; }
+.prog-entry__usda {
+  background: var(--purple-pale); border: 1.5px solid var(--border);
+  border-radius: 14px; padding: 1rem 1.2rem; margin-top: .25rem;
+  display: flex; flex-direction: column; gap: .5rem;
+}
+.prog-entry__usda-link {
+  font-family: 'Fredoka One', cursive; font-size: .97rem;
+  color: var(--purple); text-decoration: none; transition: opacity .18s;
+}
+.prog-entry__usda-link:hover { opacity: .75; }
+.prog-entry__usda-text {
+  font-size: .82rem; color: #4a2880; line-height: 1.65;
+  font-weight: 600; margin: 0;
+}
+.prog-entry__usda-text a {
+  color: var(--purple); font-weight: 700; text-decoration: underline;
+}
+@media (max-width: 860px) {
+  .prog-entry, .prog-entry--reverse { grid-template-columns: 1fr; direction: ltr; gap: 1.75rem; }
+  .prog-entry--reverse .prog-entry__media { order: -1; }
+  .prog-entry__img { aspect-ratio: 16/9; }
+  .prog-entry__title { font-size: 1.4rem; }
+}
+
 
 
 /* ════════════════════════════════
@@ -694,84 +767,77 @@ body { font-family: 'Nunito', sans-serif; background: #fff; color: #1e0a3c; over
 
   <!-- PROGRAMS -->
   <section class="section section--alt" id="programs">
-    <div style="text-align:center;max-width:600px;margin:0 auto 3rem">
-      <div class="section__tag" data-reveal>What We Offer</div>
+
+    <!-- Section header -->
+    <div style="text-align:center;max-width:700px;margin:0 auto 3.5rem">
+      <div class="section__tag" data-reveal>Our Programs</div>
       <h2 class="section__title" data-reveal data-delay="1">Programs for <span class="crayon">Every Stage</span></h2>
-      <p class="section__body" data-reveal data-delay="2">From first steps to after school — we meet your family where you are! 🌈</p>
+      <p class="section__body" data-reveal data-delay="2">We provide subsidized services to make quality early childhood education accessible to children and families within the communities where they live. Through the grants we obtain, many of our families can benefit from <strong>Free or Low-Cost services</strong>.</p>
     </div>
-    <div class="programs-grid">
 
-      <!-- Card 1: Family Child Care Home -->
-      <div class="program-card program-card--pink" data-reveal>
-        <div class="program-card__deco"></div>
-        <span class="program-card__emoji">🍼</span>
-        <span class="program-card__age">Ages 3 months – 5 years</span>
-        <h3 class="program-card__title">Family Child Care Home</h3>
-        <p class="program-card__body">Licensed home-based providers offer warm, personalized care for infants and toddlers in a cozy, family-like environment — tailored to your child's unique needs.</p>
-        <button class="program-card__toggle" onclick="toggleProgram(this)" aria-expanded="false">
-          <span class="program-card__toggle-label">Learn More</span>
-          <span class="program-card__chevron">&#8964;</span>
-        </button>
-        <div class="program-card__detail">
-          <div class="program-card__detail-inner">
-            <ul class="program-card__features">
-              <li>Small, home-based groups for maximum individual attention</li>
-              <li>Flexible hours to fit your family's schedule</li>
-              <li>Nurturing caregivers with specialized infant &amp; toddler training</li>
-              <li>Daily routines that mirror the warmth of home</li>
-              <li>Nutritious CACFP-compliant meals included</li>
-            </ul>
-            <button class="program-card__link program-card__link--detail" onclick="showPage('apply')">Enroll Today →</button>
-          </div>
+    <!-- Program entries -->
+    <div class="prog-list">
+
+      <!-- 1: Center Based Child Development -->
+      <div class="prog-entry" data-reveal>
+        <div class="prog-entry__media">
+          <img src="images/Torrance-Outdoor%20Play.jpg" alt="Children playing outdoors at Torrance center" class="prog-entry__img" onerror="this.src='images/gallery-outdoor.jpg'">
+          <div class="prog-entry__badge prog-entry__badge--purple">Ages 18 mo – 5 yrs</div>
+        </div>
+        <div class="prog-entry__body">
+          <h3 class="prog-entry__title">Center Based Child Development</h3>
+          <p class="prog-entry__text">We have <strong>3 centers</strong> (Lomita, Torrance, Wilmington) providing Early Childhood Development programs for children ages 18 months to 5 years old.</p>
+          <p class="prog-entry__text">Our teachers appropriately support children at their current developmental level and gently extend their thinking and reasoning to the next level, paving the way for school and future success.</p>
+          <button class="prog-entry__btn" onclick="showPage('apply')">Enroll Today →</button>
         </div>
       </div>
 
-      <!-- Card 2: Toddler & Preschool -->
-      <div class="program-card program-card--sky" data-reveal data-delay="1">
-        <div class="program-card__deco"></div>
-        <span class="program-card__emoji">🎨</span>
-        <span class="program-card__age">Ages 2 – 5 years</span>
-        <h3 class="program-card__title">Toddler &amp; Preschool</h3>
-        <p class="program-card__body">Our center-based program follows the HighScope Curriculum, supporting cognitive, language, social, emotional, and physical development through joyful, play-based learning.</p>
-        <button class="program-card__toggle" onclick="toggleProgram(this)" aria-expanded="false">
-          <span class="program-card__toggle-label">Learn More</span>
-          <span class="program-card__chevron">&#8964;</span>
-        </button>
-        <div class="program-card__detail">
-          <div class="program-card__detail-inner">
-            <ul class="program-card__features">
-              <li>HighScope Curriculum — child-initiated, active learning</li>
-              <li>Certified teachers with early childhood education degrees</li>
-              <li>Language-rich classrooms supporting bilingual growth</li>
-              <li>Art, music, movement, and outdoor exploration daily</li>
-              <li>Kindergarten readiness built into every activity</li>
-            </ul>
-            <button class="program-card__link program-card__link--detail" onclick="showPage('apply')">Enroll Today →</button>
-          </div>
+      <!-- 2: School-Age -->
+      <div class="prog-entry prog-entry--reverse" data-reveal>
+        <div class="prog-entry__media">
+          <img src="images/cdc-child3.jpg" alt="School-age children at Torrance center" class="prog-entry__img" onerror="this.src='images/gallery-learning.jpg'">
+          <div class="prog-entry__badge prog-entry__badge--sky">Kinder – 12 yrs</div>
+        </div>
+        <div class="prog-entry__body">
+          <h3 class="prog-entry__title">School-Age</h3>
+          <p class="prog-entry__text">Our <strong>Torrance center</strong> offers a school-age program for children kinder through 12 years old. We are aligned with the <strong>Torrance Unified School District's</strong> academic calendar to offer after-school services and full-day services during school breaks (Spring, Summer, and Winter).</p>
+          <button class="prog-entry__btn" onclick="showPage('apply')">Enroll Today →</button>
         </div>
       </div>
 
-      <!-- Card 3: After-School Care -->
-      <div class="program-card program-card--green" data-reveal data-delay="2">
-        <div class="program-card__deco"></div>
-        <span class="program-card__emoji">📚</span>
-        <span class="program-card__age">Ages 5 – 12 years</span>
-        <h3 class="program-card__title">After-School Care</h3>
-        <p class="program-card__body">A safe and enriching after-school program that combines homework support, creative activities, and social development in a welcoming, community-focused environment.</p>
-        <button class="program-card__toggle" onclick="toggleProgram(this)" aria-expanded="false">
-          <span class="program-card__toggle-label">Learn More</span>
-          <span class="program-card__chevron">&#8964;</span>
-        </button>
-        <div class="program-card__detail">
-          <div class="program-card__detail-inner">
-            <ul class="program-card__features">
-              <li>Daily homework help from trained staff</li>
-              <li>STEAM projects, arts &amp; crafts, and enrichment clubs</li>
-              <li>Safe pickup directly from partnered local schools</li>
-              <li>Social-emotional learning woven into every session</li>
-              <li>Healthy afternoon snack provided daily</li>
-            </ul>
-            <button class="program-card__link program-card__link--detail" onclick="showPage('apply')">Enroll Today →</button>
+      <!-- 3: Family Child Care Homes -->
+      <div class="prog-entry" data-reveal>
+        <div class="prog-entry__media">
+          <img src="images/1T3A8991.JPG" alt="Family Child Care Home provider with children" class="prog-entry__img" onerror="this.src='images/gallery-community.jpg'">
+          <div class="prog-entry__badge prog-entry__badge--pink">Ages 3 mo – 5 yrs</div>
+        </div>
+        <div class="prog-entry__body">
+          <h3 class="prog-entry__title">Family Child Care Homes (FCCH)</h3>
+          <p class="prog-entry__text">We have a network of <strong>50+ Family Child Care Home Providers</strong> throughout Los Angeles County serving children as young as 3 months old and up to 5 years old.</p>
+          <p class="prog-entry__text">Home Providers are licensed (8–14 children) day care centers and qualified early child development educators.</p>
+          <p class="prog-entry__text">Our team of <strong>Hub Leaders</strong> provide field-based support and visit Home Providers twice a month. Hub Leaders provide support with developmentally engaging activities, completing DRDP assessments, and collaborating with Providers to meet the needs of children and families.</p>
+          <button class="prog-entry__btn" onclick="showPage('apply')">Enroll Today →</button>
+        </div>
+      </div>
+
+      <!-- 4: Nutrition Services -->
+      <div class="prog-entry prog-entry--reverse" data-reveal>
+        <div class="prog-entry__media">
+          <img src="images/DC9A6955.JPG" alt="Nutritious meals prepared at our central kitchen" class="prog-entry__img" onerror="this.src='images/gallery-fun.jpg'">
+          <div class="prog-entry__badge prog-entry__badge--green">All Ages</div>
+        </div>
+        <div class="prog-entry__body">
+          <h3 class="prog-entry__title">Nutrition Services</h3>
+          <p class="prog-entry__text">Our <strong>Central Kitchen located in Carson</strong> cooks fresh meals daily and delivers 3 meals to our centers: Breakfast, Lunch, and PM Snack.</p>
+          <p class="prog-entry__text">We operate in accordance with the <strong>Child and Adult Care Food Program (CACFP)</strong> to provide nutritious and diverse meals.</p>
+          <p class="prog-entry__text">Menus are provided to families in 3 languages: <strong>English, Spanish, and Portuguese</strong>. Our families and staff contribute recipes which are included on our menus every Thursday.</p>
+          <div class="prog-entry__usda">
+            <a href="https://www.usda.gov/non-discrimination-statement" target="_blank" rel="noopener" class="prog-entry__usda-link">🏛️ View the USDA Non-Discrimination Statement ↗</a>
+            <p class="prog-entry__usda-text">Civil Rights Complaints may be submitted to the CDSS-CACFP Branch at
+              <a href="tel:9166515400">916-651-5400</a>, by email at
+              <a href="mailto:CACFPCivilRights@dss.ca.gov">CACFPCivilRights@dss.ca.gov</a>, or by using
+              <a href="https://www.surveymonkey.com/r/FBKKNZX" target="_blank" rel="noopener">this online form</a>.
+            </p>
           </div>
         </div>
       </div>
