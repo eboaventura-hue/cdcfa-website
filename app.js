@@ -41,7 +41,7 @@ function switchTab(name, btn) {
 /* ─────────────────────────────────
    HERO CAROUSEL
 ───────────────────────────────── */
-const CAROUSEL_TOTAL    = 5;
+const CAROUSEL_TOTAL    = 9;
 const CAROUSEL_INTERVAL = 5000; // ms between auto-slides
 let carIdx   = 0;
 let carTimer = null;
