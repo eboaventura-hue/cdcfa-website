@@ -303,6 +303,59 @@ body { font-family: 'Nunito', sans-serif; background: #fff; color: #1e0a3c; over
 .program-card--sky   .program-card__features li::before { color: #0369a1; }
 .program-card--green .program-card__features li::before { color: #15803d; }
 .program-card__link--detail { margin-top: .5rem; }
+/* ════════════════════════════════
+   USDA / CIVIL RIGHTS HIGHLIGHT
+════════════════════════════════ */
+.usda-highlight {
+  background: linear-gradient(135deg, #3b1f6e 0%, #7c3aed 100%);
+  padding: 2.25rem 1.5rem;
+}
+.usda-highlight__inner {
+  max-width: 900px; margin: 0 auto;
+  display: flex; align-items: flex-start; gap: 1.25rem;
+  background: rgba(255,255,255,.1); border: 2px solid rgba(255,255,255,.22);
+  border-radius: 20px; padding: 1.75rem 2rem;
+  backdrop-filter: blur(6px);
+}
+.usda-highlight__icon {
+  font-size: 2.2rem; flex-shrink: 0; line-height: 1; margin-top: .1rem;
+}
+.usda-highlight__body { flex: 1; min-width: 0; }
+.usda-highlight__title {
+  display: inline-block; font-family: 'Fredoka One', cursive;
+  font-size: 1.15rem; color: #fff; text-decoration: none;
+  margin-bottom: .6rem; transition: opacity .18s;
+  border-bottom: 2px solid rgba(255,255,255,.4);
+  padding-bottom: .15rem;
+}
+.usda-highlight__title:hover { opacity: .82; border-bottom-color: #fff; }
+.usda-highlight__text {
+  font-size: .9rem; color: rgba(255,255,255,.88);
+  font-weight: 600; margin: 0 0 .75rem; line-height: 1.5;
+}
+.usda-highlight__contacts {
+  display: flex; flex-wrap: wrap; align-items: center; gap: .5rem .75rem;
+}
+.usda-highlight__contact {
+  display: inline-flex; align-items: center; gap: .35rem;
+  font-size: .87rem; font-weight: 700; color: #fff; text-decoration: none;
+  background: rgba(255,255,255,.15); border: 1.5px solid rgba(255,255,255,.28);
+  border-radius: 100px; padding: .3rem .85rem;
+  transition: background .18s, transform .15s;
+}
+.usda-highlight__contact:hover {
+  background: rgba(255,255,255,.26); transform: translateY(-1px);
+}
+.usda-highlight__contact-icon { font-size: 1rem; line-height: 1; }
+.usda-highlight__sep {
+  color: rgba(255,255,255,.45); font-size: 1.1rem; font-weight: 300;
+}
+@media (max-width: 600px) {
+  .usda-highlight__inner { flex-direction: column; gap: .75rem; padding: 1.4rem 1.25rem; }
+  .usda-highlight__sep { display: none; }
+  .usda-highlight__contacts { gap: .5rem; }
+}
+
 /* Hide the duplicate bottom enroll button when panel is open */
 .program-card.expanded > .program-card__link:last-child { display: none; }
 
@@ -765,6 +818,35 @@ body { font-family: 'Nunito', sans-serif; background: #fff; color: #1e0a3c; over
       </p>
     </div>
   </section>
+
+  <!-- USDA / CIVIL RIGHTS HIGHLIGHT -->
+  <section class="usda-highlight" id="usda-notice" data-reveal>
+    <div class="usda-highlight__inner">
+      <div class="usda-highlight__icon">🏛️</div>
+      <div class="usda-highlight__body">
+        <a class="usda-highlight__title" href="https://www.usda.gov/non-discrimination-statement" target="_blank" rel="noopener">
+          View the USDA Non-Discrimination Statement ↗
+        </a>
+        <p class="usda-highlight__text">
+          Civil Rights complaints may be submitted to the CDSS-CACFP Branch:
+        </p>
+        <div class="usda-highlight__contacts">
+          <a class="usda-highlight__contact" href="tel:9166515400">
+            <span class="usda-highlight__contact-icon">📞</span>916-651-5400
+          </a>
+          <span class="usda-highlight__sep">·</span>
+          <a class="usda-highlight__contact" href="mailto:CACFPCivilRights@dss.ca.gov">
+            <span class="usda-highlight__contact-icon">📧</span>CACFPCivilRights@dss.ca.gov
+          </a>
+          <span class="usda-highlight__sep">·</span>
+          <a class="usda-highlight__contact" href="https://www.surveymonkey.com/r/FBKKNZX" target="_blank" rel="noopener">
+            <span class="usda-highlight__contact-icon">📝</span>Online Complaint Form
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
 
   <!-- ABOUT -->
   <section class="section" id="about">
